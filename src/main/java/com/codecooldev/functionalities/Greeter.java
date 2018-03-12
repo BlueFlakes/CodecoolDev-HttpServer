@@ -1,4 +1,4 @@
-package com.codecooldev.httpserver.services;
+package com.codecooldev.functionalities;
 
 import org.springframework.stereotype.Service;
 

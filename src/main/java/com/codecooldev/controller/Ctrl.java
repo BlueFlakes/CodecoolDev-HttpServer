@@ -1,7 +1,7 @@
-package com.codecooldev.httpserver.controller;
+package com.codecooldev.controller;
 
-import com.codecooldev.httpserver.baseclasses.ApplicationException;
-import com.codecooldev.httpserver.services.Greeter;
+import com.codecooldev.baseclasses.ApplicationException;
+import com.codecooldev.functionalities.Greeter;
 import org.springframework.stereotype.Controller;
 
 @Controller

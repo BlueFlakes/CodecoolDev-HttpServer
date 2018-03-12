@@ -1,4 +1,4 @@
-package com.codecooldev.httpserver.view;
+package com.codecooldev.view;
 
 public class Screen {
     public static void clear() {

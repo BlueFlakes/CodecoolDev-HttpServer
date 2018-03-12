@@ -1,4 +1,4 @@
-package com.codecooldev.httpserver.baseclasses;
+package com.codecooldev.baseclasses;
 
 public class ApplicationException extends Exception {
 

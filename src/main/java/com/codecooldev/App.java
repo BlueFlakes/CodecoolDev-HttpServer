@@ -1,8 +1,8 @@
-package com.codecooldev.httpserver;
+package com.codecooldev;
 
-import com.codecooldev.httpserver.baseclasses.ApplicationException;
-import com.codecooldev.httpserver.controller.Ctrl;
-import com.codecooldev.httpserver.view.Screen;
+import com.codecooldev.baseclasses.ApplicationException;
+import com.codecooldev.controller.Ctrl;
+import com.codecooldev.view.Screen;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
