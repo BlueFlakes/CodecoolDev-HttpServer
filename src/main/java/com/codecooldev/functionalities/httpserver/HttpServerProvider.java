@@ -18,7 +18,7 @@ public class HttpServerProvider {
             while (true) {
                 try {
                     Socket connection = server.accept();
-                    DaytimeThread task = new DaytimeThread(connection);
+                    EchoReceiver task = new EchoReceiver(connection);
                     executorService.execute(task);
                 } catch (IOException ex) {}
             }
@@ -28,10 +28,10 @@ public class HttpServerProvider {
 
     }
 
-    private static class DaytimeThread implements Runnable {
+    private static class EchoReceiver implements Runnable {
         private Socket connection;
 
-        DaytimeThread(Socket connection) {
+        EchoReceiver(Socket connection) {
             this.connection = connection;
         }
 
