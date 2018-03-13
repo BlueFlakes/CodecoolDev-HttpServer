@@ -1,14 +1,11 @@
 package com.codecooldev.functionalities.httpserver;
 
 import com.codecooldev.functionalities.httprequest.HttpRequest;
-import com.codecooldev.functionalities.httprequest.HttpRequestService;
+import com.codecooldev.functionalities.httprequest.HttpRequestParserService;
 import com.codecooldev.functionalities.response.HttpResponse;
-import com.codecooldev.functionalities.response.HttpResponseService;
-import com.sun.org.apache.xpath.internal.SourceTree;
+import com.codecooldev.functionalities.response.HttpResponseCreatorService;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -45,11 +42,11 @@ public class HttpServerProvider {
         public void run() {
             try (Socket client = connection) {
                 System.out.println("-------------------------------------------------------");
-                HttpRequestService service = new HttpRequestService();
+                HttpRequestParserService service = new HttpRequestParserService();
                 HttpRequest request = service.parse(client.getInputStream());
                 System.out.println(request.getMethod() + "\n" + request.getURI());
                 HttpResponse response = new  HttpResponse();
-                HttpResponseService rs = new HttpResponseService(client.getOutputStream(), response);
+                HttpResponseCreatorService rs = new HttpResponseCreatorService(client.getOutputStream(), response);
                 rs.sendResponse();
             } catch (Exception e) {
                 e.printStackTrace();
