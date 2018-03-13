@@ -28,6 +28,7 @@ public class HttpResponseCreatorService {
                                 .getResponse();
 
             out.print(responseBuilder.toString());
+            out.flush();
         }
     }
 }
