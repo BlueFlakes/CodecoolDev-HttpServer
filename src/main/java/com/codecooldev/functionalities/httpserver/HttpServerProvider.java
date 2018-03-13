@@ -1,5 +1,11 @@
 package com.codecooldev.functionalities.httpserver;
 
+import com.codecooldev.functionalities.httprequest.HttpRequest;
+import com.codecooldev.functionalities.httprequest.HttpRequestService;
+import com.codecooldev.functionalities.response.HttpResponse;
+import com.codecooldev.functionalities.response.HttpResponseService;
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,18 +43,14 @@ public class HttpServerProvider {
 
         @Override
         public void run() {
-            try {
+            try (Socket client = connection) {
                 System.out.println("-------------------------------------------------------");
-                Socket client = connection;
-                String clientAddress = client.getInetAddress().getHostAddress();
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(client.getInputStream()));
-
-                String data;
-                while ( (data = in.readLine()) != null ) {
-                    System.out.println("\r\nMessage from " + clientAddress + ": " + data);
-                }
-                System.out.println("-------------------------------------------------------");
+                HttpRequestService service = new HttpRequestService();
+                HttpRequest request = service.parse(client.getInputStream());
+                System.out.println(request.getMethod() + "\n" + request.getURI());
+                HttpResponse response = new  HttpResponse();
+                HttpResponseService rs = new HttpResponseService(client.getOutputStream(), response);
+                rs.sendResponse();
             } catch (Exception e) {
                 e.printStackTrace();
             }
