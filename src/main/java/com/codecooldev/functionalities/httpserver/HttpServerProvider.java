@@ -41,6 +41,8 @@ public class HttpServerProvider {
         @Override
         public void run() {
             try (Socket client = connection) {
+                client.setSoTimeout(100);
+
                 System.out.println("-------------------------------------------------------");
                 HttpRequestParserService service = new HttpRequestParserService();
                 HttpRequest request = service.parse(client.getInputStream());
