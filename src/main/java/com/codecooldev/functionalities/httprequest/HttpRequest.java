@@ -9,6 +9,8 @@ public class HttpRequest {
         splitRequestLine(requestLine);
     }
 
+    // TODO : MOVE Parsing from MODEL to more proper class
+
     private void splitRequestLine(String requestLine) throws RequestLineException {
         String[] splitedRequestLine = requestLine.split("\\s+");
         if (splitedRequestLine.length != 3) throw new RequestLineException(String.format("Wrong request line \n %s", requestLine));

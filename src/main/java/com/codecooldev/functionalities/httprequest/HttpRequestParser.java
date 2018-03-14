@@ -2,32 +2,24 @@ package com.codecooldev.functionalities.httprequest;
 
 import java.io.*;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/**
-     * Class for HTTP request parsing as defined by RFC 2612:
-     *
-     * Request = Request-Line ; Section 5.1 (( general-header ; Section 4.5 |
-     * request-header ; Section 5.3 | entity-header ) CRLF) ; Section 7.1 CRLF [
-     * message-body ] ; Section 4.3
-     *
-     * @author izelaya
-     *
-     */
 public class HttpRequestParser {
-
+    private static final ExecutorService executors = Executors.newFixedThreadPool(5);
     private String requestLine;
     private Hashtable<String, String> requestHeaders;
     private StringBuffer messageBody;
 
     public HttpRequestParser() {
-        this.requestHeaders = new Hashtable<String, String>();
+        this.requestHeaders = new Hashtable<>();
         this.messageBody = new StringBuffer();
     }
 
     /**
      * Parse and HTTP request.
      *
-     * @param request
+     *
      *            String holding http request.
      * @throws IOException
      *             If an I/O error occurs reading the input stream.
@@ -35,20 +27,60 @@ public class HttpRequestParser {
      *             If HTTP Request is malformed
      */
     public void parseRequest(InputStream clientRequest) throws IOException, HttpFormatException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(clientRequest));
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientRequest));
 
-        setRequestLine(reader.readLine()); // Request-Line ; Section 5.1
+        setRequestLine(in.readLine()); // Request-Line ; Section 5.1
 
-        String header = reader.readLine();
+        String header = in.readLine();
         while (header.length() > 0) {
             appendHeaderParameter(header);
-            header = reader.readLine();
+            header = in.readLine();
         }
 
-        String bodyLine = reader.readLine();
-        while (bodyLine != null) {
-            appendMessageBody(bodyLine);
-            bodyLine = reader.readLine();
+        this.messageBody = readUntilTimeoutOccur(in);
+    }
+
+    private StringBuffer readUntilTimeoutOccur(BufferedReader bf) {
+        try {
+            InputReader inputReader = new InputReader(bf);
+            executors.execute(inputReader);
+
+            Thread.sleep(25);
+
+            return inputReader.getBody();
+        } catch (InterruptedException e) {}
+        throw new IllegalStateException("This thread shouldn't get ever interrupted.");
+    }
+
+    private static class InputReader implements Runnable {
+        private StringBuffer body;
+        private BufferedReader in;
+
+        private InputReader(BufferedReader bufferedReader) {
+            this.in = bufferedReader;
+        }
+
+        StringBuffer getBody( ) {
+            return body;
+        }
+
+        @Override
+        public void run( ) {
+            this.body = new StringBuffer();
+
+            try {
+                String bodyLine;
+                while ((bodyLine = in.readLine()) != null) {
+                    appendMessageBody(bodyLine);
+                }
+            } catch (IOException e) {
+                System.out.println("Socket Timeout -> Closed by -> Socket Exception");
+            }
+        }
+
+        private void appendMessageBody(String bodyLine) {
+            this.body.append(bodyLine)
+                     .append("\r\n");
         }
     }
 
@@ -92,10 +124,6 @@ public class HttpRequestParser {
         return this.messageBody.toString();
     }
 
-    private void appendMessageBody(String bodyLine) {
-        this.messageBody.append(bodyLine).append("\r\n");
-    }
-
     /**
      * For list of available headers refer to sections: 4.5, 5.3, 7.1 of RFC 2616
      * @param headerName Name of header
@@ -105,4 +133,3 @@ public class HttpRequestParser {
         return this.requestHeaders.get(headerName);
     }
 }
-

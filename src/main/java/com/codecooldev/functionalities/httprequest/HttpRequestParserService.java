@@ -3,7 +3,7 @@ package com.codecooldev.functionalities.httprequest;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class HttpRequestService {
+public class HttpRequestParserService {
 
     public HttpRequest parse(InputStream request) throws IOException, HttpFormatException, RequestLineException {
         HttpRequestParser parser = new HttpRequestParser();

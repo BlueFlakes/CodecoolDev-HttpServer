@@ -3,14 +3,16 @@ package com.codecooldev.functionalities.response;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-public class HttpResponseService {
+public class HttpResponseCreatorService {
     private OutputStream os;
     private HttpResponse response;
 
-    public HttpResponseService(OutputStream os, HttpResponse response) {
+    public HttpResponseCreatorService(OutputStream os, HttpResponse response) {
         this.os = os;
         this.response = response;
     }
+
+    // TODO : separate sending and response creation
 
     public void sendResponse() {
         try (PrintWriter out = new PrintWriter(os)) {
@@ -26,6 +28,7 @@ public class HttpResponseService {
                                 .getResponse();
 
             out.print(responseBuilder.toString());
+            out.flush();
         }
     }
 }
