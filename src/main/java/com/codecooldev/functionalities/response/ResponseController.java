@@ -9,7 +9,7 @@ public class ResponseController {
         this.httpResponseSenderService = httpResponseSenderService;
     }
 
-    public void send(HttpResponse httpResponse, OutputStream clientOutputStream)
+    public void send(HttpResponseContainer httpResponse, OutputStream clientOutputStream)
             throws ResponseCreatorException {
 
         this.httpResponseSenderService.sendResponse(clientOutputStream, httpResponse.createResponse());
