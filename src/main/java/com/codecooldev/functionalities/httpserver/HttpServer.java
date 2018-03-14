@@ -41,7 +41,7 @@ public class HttpServer {
         }
     }
 
-    public void createContext(String path, HttpHandler handler) {
+    public void setRoute(String path, HttpHandler handler) {
         this.handlers.put(path,handler);
     }
 

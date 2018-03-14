@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO : fix dependencies and responsibilities add ctrl and public api
-public class HttpResponse {
+public class HttpResponseContainer {
     private static final byte[] CRLF = "\r\n".getBytes();
     private static final byte[] separator = ": ".getBytes();
 
@@ -16,14 +16,14 @@ public class HttpResponse {
     private Map<String, String> customUserInputs = new HashMap<>();
     private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    public HttpResponse( ) {
+    public HttpResponseContainer( ) {
     }
 
     public void addKnownAttr(AttrValue attrValue, String value) {
         this.map.put(attrValue, value);
     }
 
-    public void AddCustomAttr(String attribute, String value) {
+    public void addCustomAttr(String attribute, String value) {
         this.customUserInputs.put(attribute, value);
     }
 

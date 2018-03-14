@@ -2,12 +2,12 @@ package com.codecooldev.functionalities.httpserver;
 
 import com.codecooldev.functionalities.httprequest.HttpRequest;
 import com.codecooldev.functionalities.response.HttpResponse;
-import com.codecooldev.functionalities.response.HttpResponseCreatorService;
-import com.codecooldev.functionalities.response.HttpResponseService;
+
+import com.codecooldev.functionalities.response.ResponseCreatorException;
 
 
 import java.io.IOException;
 
 public interface HttpHandler {
-    void handle(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException;
+    void handle(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ResponseCreatorException;
 }
