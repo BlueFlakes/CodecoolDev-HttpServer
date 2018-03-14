@@ -1,99 +1,30 @@
 package com.codecooldev.functionalities.response;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.io.OutputStream;
-import java.util.Date;
 
 public class HttpResponse {
-    private HttpResponseService responseService;
-    private Integer statusCode;
-    private String statusInfo;
-    private Date date;
-    private String server;
-    private String contentType;
-    private long contentLen;
-    private String coding;
-    private String body;
+    private HttpResponseContainer container;
+    private HttpResponseSenderService service;
+    private OutputStream os;
 
-
-    public HttpResponse(OutputStream outputStream) {
-        this.statusCode = 200;
-        this.statusInfo = "OK";
-        this.date = new Date();
-        this.server = "Konrad i Kamil server";
-        this.contentType = "text/html";
-        this.coding = "charset=iso-8859-1";
-        this.body = "<html><body><h1> hello </h1></body></html>";
-        this.contentLen = body.length();
-        responseService = new HttpResponseService(outputStream, this);
+    public HttpResponse(OutputStream os) {
+        this.os = os;
+        this.container = new HttpResponseContainer();
+        this.service = new HttpResponseSenderService();
     }
 
-    public void sendResponse() {
-        responseService.sendResponse();
+    public void sendResponse() throws ResponseCreatorException {
+        service.sendResponse(os,container.createResponse());
     }
 
-    public Integer getStatusCode() {
-        return statusCode;
+    public void changeAtribute(HttpResponseContainer.AttrValue atrr, String value ) {
+        container.addKnownAttr(atrr, value);
     }
 
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
+    public void addAttribute(HttpResponseContainer.AttrValue atrr, String value) {
+        container.addKnownAttr(atrr, value);
     }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public String getServer() {
-        return server;
-    }
-
-    public void setServer(String server) {
-        this.server = server;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public long getContentLen() {
-        return contentLen;
-    }
-
-    public void setContentLen(long contentLen) {
-        this.contentLen = contentLen;
-    }
-
-    public String getCoding() {
-        return coding;
-    }
-
-    public void setCoding(String coding) {
-        this.coding = coding;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-        this.contentLen = body.length();
-    }
-
-    public String getStatusInfo() {
-        return statusInfo;
-    }
-
-    public void setStatusInfo(String statusInfo) {
-        this.statusInfo = statusInfo;
-    }
-
 }
+
