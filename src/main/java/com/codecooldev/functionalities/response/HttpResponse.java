@@ -1,8 +1,10 @@
 package com.codecooldev.functionalities.response;
 
+import java.io.OutputStream;
 import java.util.Date;
 
 public class HttpResponse {
+    private HttpResponseService responseService;
     private Integer statusCode;
     private String statusInfo;
     private Date date;
@@ -13,7 +15,7 @@ public class HttpResponse {
     private String body;
 
 
-    public HttpResponse() {
+    public HttpResponse(OutputStream outputStream) {
         this.statusCode = 200;
         this.statusInfo = "OK";
         this.date = new Date();
@@ -22,6 +24,11 @@ public class HttpResponse {
         this.coding = "charset=iso-8859-1";
         this.body = "<html><body><h1> hello </h1></body></html>";
         this.contentLen = body.length();
+        responseService = new HttpResponseService(outputStream, this);
+    }
+
+    public void sendResponse() {
+        responseService.sendResponse();
     }
 
     public Integer getStatusCode() {
