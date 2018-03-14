@@ -1,92 +1,152 @@
 package com.codecooldev.functionalities.response;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+// TODO : fix dependencies and responsibilities add ctrl and public api
 public class HttpResponse {
-    private Integer statusCode;
-    private String statusInfo;
-    private Date date;
-    private String server;
-    private String contentType;
-    private long contentLen;
-    private String coding;
-    private String body;
+    private static final byte[] CRLF = "\r\n".getBytes();
+    private static final byte[] separator = ": ".getBytes();
 
+    private Map<AttrValue, String> map = new HashMap<>();
+    private Map<String, String> customUserInputs = new HashMap<>();
+    private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    public HttpResponse() {
-        this.statusCode = 200;
-        this.statusInfo = "OK";
-        this.date = new Date();
-        this.server = "Konrad i Kamil server";
-        this.contentType = "text/html";
-        this.coding = "charset=iso-8859-1";
-        this.body = "<html><body><h1> hello </h1></body></html>";
-        this.contentLen = body.length();
+    public HttpResponse( ) {
     }
 
-    public Integer getStatusCode() {
-        return statusCode;
+    public void addKnownAttr(AttrValue attrValue, String value) {
+        this.map.put(attrValue, value);
     }
 
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
+    public void AddCustomAttr(String attribute, String value) {
+        this.customUserInputs.put(attribute, value);
     }
 
-    public Date getDate() {
-        return date;
+    private interface ContainsDefaultValue {
+        String getDefault();
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public enum Attribute {
+        HEADER("HTTP/1.0 %s %s", AttrValue.STATUS_CODE, AttrValue.STATUS_INFO),
+        CURRENT_DATE("Date: %s", AttrValue.DATE),
+        CONTENT_LENGTH("Content-Length: %s", AttrValue.CONTENT_LENGTH),
+        CONTENT_TYPE("Content-Type: %s; %s", AttrValue.CONTENT_TYPE, AttrValue.ENCODING),
+        BODY(null, AttrValue.BODY);
+
+        private String name;
+        private ContainsDefaultValue[] attributeValues;
+
+        Attribute(String name, ContainsDefaultValue... attributeValues) {
+            this.name = name;
+            this.attributeValues = attributeValues;
+        }
     }
 
-    public String getServer() {
-        return server;
+    public enum AttrValue implements ContainsDefaultValue {
+        STATUS_CODE("200"),
+        STATUS_INFO("OK"),
+        DATE(getCurrentDate()),
+        CONTENT_TYPE("text/html"),
+        CONTENT_LENGTH("46"),
+        ENCODING("charset=iso-8859-1"),
+        BODY("<html><body><h1>Hello World</h1></body></html>");
+
+        private String value;
+
+        AttrValue(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getDefault( ) {
+            return this.value;
+        }
+
+        private static String getCurrentDate( ) {
+            return new Date().toString();
+        }
     }
 
-    public void setServer(String server) {
-        this.server = server;
+    public ByteArrayOutputStream createResponse( ) throws ResponseCreatorException {
+        try {
+            addHeaderAndGetNextStep();
+            fillUpWithKnownProperties();
+            fillUpWithCustomProperties();
+            addBody(this.map.getOrDefault(AttrValue.BODY, AttrValue.BODY.getDefault()));
+            return this.byteArrayOutputStream;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        throw new ResponseCreatorException("Couldn't create response!");
     }
 
-    public String getContentType() {
-        return contentType;
+    private void fillUpWithCustomProperties() throws IOException {
+        for (Map.Entry<String, String> entry : this.customUserInputs.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+            addProperty(name, value);
+        }
     }
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
+    private void addHeaderAndGetNextStep() throws IOException {
+
+        String identity = Attribute.HEADER.name;
+        String statusCode = map.getOrDefault(AttrValue.STATUS_CODE, AttrValue.STATUS_CODE.getDefault());
+        String statusInfo = map.getOrDefault(AttrValue.STATUS_INFO, AttrValue.STATUS_INFO.getDefault());
+        addHeader(identity, statusCode, statusInfo);
     }
 
-    public long getContentLen() {
-        return contentLen;
+    private void fillUpWithKnownProperties() throws IOException {
+
+        Attribute[] knownProperties =
+                new Attribute[]{Attribute.CONTENT_LENGTH, Attribute.CURRENT_DATE, Attribute.CONTENT_TYPE};
+
+        for (Attribute property : knownProperties) {
+            String identity = property.name;
+            Object[] values = Arrays.stream(property.attributeValues)
+                    .map(n -> this.map.getOrDefault(n, n.getDefault()))
+                    .toArray();
+
+            addProperty(identity, values);
+        }
     }
 
-    public void setContentLen(long contentLen) {
-        this.contentLen = contentLen;
+    private void addHeader(String header, Object... attributes) throws IOException {
+        String formattedHeader = replaceSpecialSignsWithAttributes(header, attributes);
+        this.byteArrayOutputStream.write(formattedHeader.getBytes());
+        this.byteArrayOutputStream.write(CRLF);
     }
 
-    public String getCoding() {
-        return coding;
+    private void addProperty(String writeTo, Object... attributes) throws IOException {
+        String propertyWithSettledValues = replaceSpecialSignsWithAttributes(writeTo, attributes);
+        this.byteArrayOutputStream.write(propertyWithSettledValues.getBytes());
+        this.byteArrayOutputStream.write(CRLF);
     }
 
-    public void setCoding(String coding) {
-        this.coding = coding;
+    private void addProperty(String propertyName, String value) throws IOException {
+        this.byteArrayOutputStream.write(propertyName.getBytes());
+        this.byteArrayOutputStream.write(separator);
+        this.byteArrayOutputStream.write(value.getBytes());
+        this.byteArrayOutputStream.write(CRLF);
     }
 
-    public String getBody() {
-        return body;
+    private void addBody(String body) throws IOException {
+        byteArrayOutputStream.write(CRLF);
+        byteArrayOutputStream.write(body.getBytes());
     }
 
-    public void setBody(String body) {
-        this.body = body;
-        this.contentLen = body.length();
+    private void addBody(byte[] body) throws IOException {
+        byteArrayOutputStream.write(CRLF);
+        byteArrayOutputStream.write(body);
     }
 
-    public String getStatusInfo() {
-        return statusInfo;
+    private static String replaceSpecialSignsWithAttributes(String writeTo, Object... attributes) {
+        return String.format(writeTo, attributes);
     }
-
-    public void setStatusInfo(String statusInfo) {
-        this.statusInfo = statusInfo;
-    }
-
 }
