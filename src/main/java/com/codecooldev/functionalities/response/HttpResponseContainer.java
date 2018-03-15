@@ -14,7 +14,7 @@ public class HttpResponseContainer {
 
     private Map<AttrValue, String> map = new HashMap<>();
     private Map<String, String> customUserInputs = new HashMap<>();
-    private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    private ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
     public HttpResponseContainer( ) {
     }
@@ -35,8 +35,7 @@ public class HttpResponseContainer {
         HEADER("HTTP/1.0 %s %s", AttrValue.STATUS_CODE, AttrValue.STATUS_INFO),
         CURRENT_DATE("Date: %s", AttrValue.DATE),
         CONTENT_LENGTH("Content-Length: %s", AttrValue.CONTENT_LENGTH),
-        CONTENT_TYPE("Content-Type: %s; %s", AttrValue.CONTENT_TYPE, AttrValue.ENCODING),
-        BODY(null, AttrValue.BODY);
+        CONTENT_TYPE("Content-Type: %s; %s", AttrValue.CONTENT_TYPE, AttrValue.ENCODING);
 
         private String name;
         private ContainsDefaultValue[] attributeValues;
@@ -52,9 +51,8 @@ public class HttpResponseContainer {
         STATUS_INFO("OK"),
         DATE(getCurrentDate()),
         CONTENT_TYPE("text/html"),
-        CONTENT_LENGTH("46"),
-        ENCODING("charset=iso-8859-1"),
-        BODY("<html><body><h1>Hello World</h1></body></html>");
+        CONTENT_LENGTH("0"),
+        ENCODING("UTF-8");
 
         private String value;
 
@@ -72,18 +70,19 @@ public class HttpResponseContainer {
         }
     }
 
-    public ByteArrayOutputStream createResponse( ) throws ResponseCreatorException {
+    ByteArrayOutputStream createResponse(ByteArrayOutputStream bodyStream) throws ResponseCreatorException {
         try {
-            addHeaderAndGetNextStep();
+            addHeader();
             fillUpWithKnownProperties();
             fillUpWithCustomProperties();
-            addBody(this.map.getOrDefault(AttrValue.BODY, AttrValue.BODY.getDefault()));
-            return this.byteArrayOutputStream;
+            addBody(bodyStream);
+
+            return this.responseStream;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        throw new ResponseCreatorException("Couldn't create response!");
+        throw new ResponseCreatorException("Couldn't create responseStream!");
     }
 
     private void fillUpWithCustomProperties() throws IOException {
@@ -94,7 +93,7 @@ public class HttpResponseContainer {
         }
     }
 
-    private void addHeaderAndGetNextStep() throws IOException {
+    private void addHeader() throws IOException {
 
         String identity = Attribute.HEADER.name;
         String statusCode = map.getOrDefault(AttrValue.STATUS_CODE, AttrValue.STATUS_CODE.getDefault());
@@ -119,31 +118,26 @@ public class HttpResponseContainer {
 
     private void addHeader(String header, Object... attributes) throws IOException {
         String formattedHeader = replaceSpecialSignsWithAttributes(header, attributes);
-        this.byteArrayOutputStream.write(formattedHeader.getBytes());
-        this.byteArrayOutputStream.write(CRLF);
+        this.responseStream.write(formattedHeader.getBytes());
+        this.responseStream.write(CRLF);
     }
 
     private void addProperty(String writeTo, Object... attributes) throws IOException {
         String propertyWithSettledValues = replaceSpecialSignsWithAttributes(writeTo, attributes);
-        this.byteArrayOutputStream.write(propertyWithSettledValues.getBytes());
-        this.byteArrayOutputStream.write(CRLF);
+        this.responseStream.write(propertyWithSettledValues.getBytes());
+        this.responseStream.write(CRLF);
     }
 
     private void addProperty(String propertyName, String value) throws IOException {
-        this.byteArrayOutputStream.write(propertyName.getBytes());
-        this.byteArrayOutputStream.write(separator);
-        this.byteArrayOutputStream.write(value.getBytes());
-        this.byteArrayOutputStream.write(CRLF);
+        this.responseStream.write(propertyName.getBytes());
+        this.responseStream.write(separator);
+        this.responseStream.write(value.getBytes());
+        this.responseStream.write(CRLF);
     }
 
-    private void addBody(String body) throws IOException {
-        byteArrayOutputStream.write(CRLF);
-        byteArrayOutputStream.write(body.getBytes());
-    }
-
-    private void addBody(byte[] body) throws IOException {
-        byteArrayOutputStream.write(CRLF);
-        byteArrayOutputStream.write(body);
+    private void addBody(ByteArrayOutputStream bodyStream) throws IOException {
+        responseStream.write(CRLF);
+        bodyStream.writeTo(responseStream);
     }
 
     private static String replaceSpecialSignsWithAttributes(String writeTo, Object... attributes) {

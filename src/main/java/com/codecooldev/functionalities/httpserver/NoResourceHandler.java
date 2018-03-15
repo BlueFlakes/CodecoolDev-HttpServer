@@ -13,10 +13,10 @@ public class NoResourceHandler implements HttpHandler {
     @Override
     public void handle(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ResponseCreatorException {
         HttpResponseSenderService service = new HttpResponseSenderService();
-        httpResponse.changeAtribute(HttpResponseContainer.AttrValue.STATUS_CODE, "404");
-        httpResponse.changeAtribute(HttpResponseContainer.AttrValue.STATUS_INFO,"Not found");
-        httpResponse.changeAtribute(HttpResponseContainer.AttrValue.BODY,"<html><body><h1>404 Not Found</h1></body></html>");
+        httpResponse.changeAttribute(HttpResponseContainer.AttrValue.STATUS_CODE, "404");
+        httpResponse.changeAttribute(HttpResponseContainer.AttrValue.STATUS_INFO,"Not found");
+        String body = "404 Not Found";
+        httpResponse.write(body.getBytes());
         httpResponse.sendResponse();
     }
-
 }

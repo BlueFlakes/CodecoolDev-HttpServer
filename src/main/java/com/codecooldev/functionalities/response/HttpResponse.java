@@ -1,11 +1,12 @@
 package com.codecooldev.functionalities.response;
 
-import com.sun.org.apache.regexp.internal.RE;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 public class HttpResponse {
     private HttpResponseContainer container;
+    private ResponseBody responseBody;
     private HttpResponseSenderService service;
     private OutputStream os;
 
@@ -13,18 +14,27 @@ public class HttpResponse {
         this.os = os;
         this.container = new HttpResponseContainer();
         this.service = new HttpResponseSenderService();
+        this.responseBody = new ResponseBody();
+    }
+
+    public void write(byte[] stream) throws IOException {
+        this.responseBody.writeToBody(stream);
     }
 
     public void sendResponse() throws ResponseCreatorException {
-        service.sendResponse(os,container.createResponse());
+        int bodySize = this.responseBody.size();
+        changeAttribute(HttpResponseContainer.AttrValue.CONTENT_LENGTH, String.valueOf(bodySize));
+        ByteArrayOutputStream bodyStream = this.responseBody.getBodyStream();
+
+        service.sendResponse(os, this.container.createResponse(bodyStream));
     }
 
-    public void changeAtribute(HttpResponseContainer.AttrValue atrr, String value ) {
-        container.addKnownAttr(atrr, value);
+    public void changeAttribute(HttpResponseContainer.AttrValue attr, String value ) {
+        container.addKnownAttr(attr, value);
     }
 
-    public void addAttribute(HttpResponseContainer.AttrValue atrr, String value) {
-        container.addKnownAttr(atrr, value);
+    public void addAttribute(HttpResponseContainer.AttrValue attr, String value) {
+        container.addKnownAttr(attr, value);
     }
 }
 
